@@ -1,6 +1,3 @@
-# There is no 'config', 'version', or 'name' block at all.
-# The file starts directly with 'binds'.
-
 binds:
   - port: 3000
     listeners:
@@ -9,8 +6,8 @@ binds:
         routes:
           # Route 1: For the HTTP Backend
           - name: mcp-http-route
-            match:
-              path: "/http-mcp"
+            matches:
+              - pathPrefix: "/http-mcp" # <-- Corrected match type
             backends:
               - mcp:
                   targets:
@@ -20,8 +17,8 @@ binds:
 
           # Route 2: For the HTTPS Backend
           - name: mcp-https-route
-            match:
-              path: "/https-mcp"
+            matches:
+              - pathPrefix: "/https-mcp" # <-- Corrected match type
             backends:
               - mcp:
                   targets:
