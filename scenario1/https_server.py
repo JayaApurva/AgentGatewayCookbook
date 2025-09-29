@@ -14,12 +14,12 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         response = {"message": "Hello from the SECURE HTTPS MCP server!"}
         self.wfile.write(json.dumps(response).encode('utf-8'))
 
-httpd = socketserver.TCPServer(("", PORT), MyHandler)
-httpd.socket = ssl.wrap_socket(httpd.socket,
-                              server_side=True,
-                              keyfile="certs/key.pem",
-                              certfile="certs/cert.pem",
-                              ssl_version=ssl.PROTOCOL_TLS)
+# Modern way to set up SSL
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain(certfile="certs/cert.pem", keyfile="certs/key.pem")
 
-print(f"HTTPS server running on port {PORT}")
-httpd.serve_forever()
+with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
+    print(f"Wrapping socket with SSL/TLS")
+    httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
+    print(f"HTTPS server running on port {PORT}")
+    httpd.serve_forever()
