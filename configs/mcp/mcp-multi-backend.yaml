@@ -1,8 +1,7 @@
-config: # <-- Add this top-level section
-  version: "1.0"
-  name: "mcp-multi-backend-demo"
+# There is no 'config', 'version', or 'name' block at all.
+# The file starts directly with 'binds'.
 
-binds: # <-- 'binds' should be at the same level as 'config'
+binds:
   - port: 3000
     listeners:
       - name: default
@@ -11,18 +10,18 @@ binds: # <-- 'binds' should be at the same level as 'config'
           # Route 1: For the HTTP Backend
           - name: mcp-http-route
             match:
-              path: "/http-mcp" # Visitors asking for "/http-mcp" go here
+              path: "/http-mcp"
             backends:
               - mcp:
                   targets:
                     - name: topcoder-mcp-http
                       mcp:
                         host: http://localhost:3005/
-                        
+
           # Route 2: For the HTTPS Backend
           - name: mcp-https-route
             match:
-              path: "/https-mcp" # Visitors asking for "/https-mcp" go here
+              path: "/https-mcp"
             backends:
               - mcp:
                   targets:
@@ -31,5 +30,4 @@ binds: # <-- 'binds' should be at the same level as 'config'
                         host: https://localhost:3443/
             policies:
               backendTLS:
-                # Tell AgentGateway to trust our self-signed certificate
                 root: ./scenario1/certs/cert.pem
