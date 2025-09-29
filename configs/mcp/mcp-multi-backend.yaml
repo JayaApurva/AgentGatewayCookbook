@@ -1,3 +1,5 @@
+# FILE: configs/mcp/mcp-multi-backend.yaml
+
 binds:
   - port: 3000
     listeners:
@@ -7,23 +9,25 @@ binds:
           # Route 1: For the HTTP Backend
           - name: mcp-http-route
             matches:
-              - pathPrefix: "/http-mcp" # <-- Corrected match type
+              - path:
+                  pathPrefix: "/http-mcp"
             backends:
-              - mcp:
+              - http: # <-- USE 'http' for a simple HTTP backend
                   targets:
-                    - name: topcoder-mcp-http
-                      mcp:
+                    - name: simple-http-backend
+                      http: # <-- USE 'http'
                         host: http://localhost:3005/
 
           # Route 2: For the HTTPS Backend
           - name: mcp-https-route
             matches:
-              - pathPrefix: "/https-mcp" # <-- Corrected match type
+              - path:
+                  pathPrefix: "/https-mcp"
             backends:
-              - mcp:
+              - http: # <-- USE 'http' for a simple HTTPS backend
                   targets:
-                    - name: topcoder-mcp-https
-                      mcp:
+                    - name: simple-https-backend
+                      http: # <-- USE 'http'
                         host: https://localhost:3443/
             policies:
               backendTLS:
