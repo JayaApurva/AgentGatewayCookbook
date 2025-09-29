@@ -1,0 +1,86 @@
+# MCP HTTP Configuration - Streamable HTTP
+# Connects to Topcoder MCP server over HTTP for fast, reliable communication
+# 
+# Usage: agentgateway -f configs/mcp/mcp-http.yaml
+# Test:  curl -X POST http://localhost:3000/mcp -H "Content-Type: application/json" -d '{"method": "tools/list", "params": {}}'
+
+version: "1.0"
+name: "mcp-http-demo"
+
+# Server binding configuration
+binds:
+  - port: 3000
+    listeners:
+      - name: default
+        protocol: HTTP
+        routes:
+          - name: mcp-http-route
+            match:
+              path: "/mcp"
+            backends:
+              - mcp:
+                  targets:
+                    - name: topcoder-mcp-http
+                      mcp:
+                        host: http://localhost:3005/mcp/
+                        streamable: true
+                        timeout: 30s
+                        keepAlive: true
+                        
+            # Traffic management policies
+            policies:
+              # Rate limiting to prevent abuse
+              localRateLimit:
+                - maxRequests: 100
+                  requestsPerFill: 100
+                  fillInterval: 1m
+                  type: requests
+                - maxTokens: 10000
+                  tokensPerFill: 5000
+                  fillInterval: 1m
+                  type: tokens
+              
+              # Retry policy for resilience
+              retry:
+                maxAttempts: 3
+                backoff: "exponential"
+                initialInterval: 100ms
+                maxInterval: 1s
+                
+              # Circuit breaker for fault tolerance
+              circuitBreaker:
+                failureThreshold: 5
+                recoveryTimeout: 30s
+                halfOpenMaxRequests: 3
+
+# Logging configuration
+logging:
+  level: info
+  format: json
+  fields:
+    - timestamp
+    - level
+    - message
+    - request_id
+    - method
+    - path
+    - status_code
+    - duration
+    - user_agent
+
+# Health check endpoint
+health:
+  enabled: true
+  path: "/health"
+  checks:
+    - name: "mcp-backend"
+      type: "http"
+      url: "http://localhost:3005/health"
+      interval: 30s
+      timeout: 5s
+
+# Metrics export
+metrics:
+  enabled: true
+  path: "/metrics"
+  port: 9090
